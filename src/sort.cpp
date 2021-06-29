@@ -112,6 +112,11 @@ void AssociateDetectionsToTrackers(const std::vector<cv::Rect>& detection,
         }
         return;
     }
+    
+    if(detection.empty()){
+        return;
+    }
+    
 
     std::vector<std::vector<float>> iou_matrix;
     // resize IOU matrix based on number of detection and tracks
