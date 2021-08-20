@@ -1,6 +1,8 @@
 ## API
 
-see `sort.h`
+see `sort.h`.
+
+Don't forget to call update function though the tracked object is not found.
 
 ## Introduction
 C++ implementation of SORT: Simple, online, and real-time tracking of multiple objects in a video sequence. the algorithm is just encapsulated into sort class, see `sort.h`
