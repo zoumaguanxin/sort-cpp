@@ -1,8 +1,11 @@
-## Introduction
-C++ implementation of SORT: Simple, online, and real-time tracking of multiple objects in a video sequence.
+## API
 
-Kuhn-Munkres (Hungarian) Algorithm in C++ is forked from:
-https://github.com/saebyn/munkres-cpp
+see `sort.h`
+
+## Introduction
+C++ implementation of SORT: Simple, online, and real-time tracking of multiple objects in a video sequence. the algorithm is just encapsulated into sort class, see `sort.h`
+
+The raw repo is forked from: https://github.com/yasenh/sort-cpp
 
 ## Dependencies
 - Ubuntu 16.04
