@@ -16,8 +16,9 @@ void HungarianMatching(const std::vector<std::vector<float>>& iou_matrix,   size
 class Sort{
 
 public:
-    Sort(){}
-    Sort(int max_age=30,int min_hits=10, float iou_threshold=0.3);
+    Sort():_max_age(60),kMinHits(3),_iou_threshold(0.3)
+    {}
+    Sort(int max_age,int min_hits, float iou_threshold);
     std::map<int,cv::Rect> update(const std::vector<cv::Rect>& detections);
 
 private:

@@ -71,6 +71,7 @@ void Tracker::Update(const cv::Rect& bbox) {
     coast_cycles_ = 0;
     // accumulate hit streak count
     hit_streak_++;
+    hit_total++;
 
     // observation - center_x, center_y, area, ratio
     Eigen::VectorXd observation = ConvertBboxToObservation(bbox);

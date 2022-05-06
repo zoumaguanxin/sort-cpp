@@ -19,8 +19,9 @@
 
 using namespace cv;
 
-float CalculateIou(const cv::Rect& det, const Tracker& track) {
-    auto trk = track.GetStateAsBbox();
+
+
+float CalculateIou(const cv::Rect& det, const cv::Rect& trk) {
     // get min/max points
     auto xx1 = std::max(det.tl().x, trk.tl().x);
     auto yy1 = std::max(det.tl().y, trk.tl().y);
@@ -37,6 +38,30 @@ float CalculateIou(const cv::Rect& det, const Tracker& track) {
     auto iou = intersection_area / union_area;
     return iou;
 }
+
+float CalculateIou(const cv::Rect& det, const Tracker& track) {
+    auto trk = track.GetStateAsBbox();
+    CalculateIou(det,trk);
+    // get min/max points
+    /*
+    auto xx1 = std::max(det.tl().x, trk.tl().x);
+    auto yy1 = std::max(det.tl().y, trk.tl().y);
+    auto xx2 = std::min(det.br().x, trk.br().x);
+    auto yy2 = std::min(det.br().y, trk.br().y);
+    auto w = std::max(0, xx2 - xx1);
+    auto h = std::max(0, yy2 - yy1);
+
+    // calculate area of intersection and union
+    float det_area = det.area();
+    float trk_area = trk.area();
+    auto intersection_area = w * h;
+    float union_area = det_area + trk_area - intersection_area;
+    auto iou = intersection_area / union_area;
+    return iou;
+    */
+}
+
+
 
 
 void HungarianMatching(const std::vector<std::vector<float>>& iou_matrix,
@@ -190,7 +215,7 @@ std::map<int,cv::Rect> Sort::update(const std::vector<cv::Rect>& detections){
     
 	// Hash-map between track ID and associated detection bounding box
     std::map<int, cv::Rect> matched;
-    // vector of unassociated detections
+    //vector of unassociated detections
     std::vector<cv::Rect> unmatched_det;
 
     // return values - matched, unmatched_det
@@ -208,16 +233,54 @@ std::map<int,cv::Rect> Sort::update(const std::vector<cv::Rect>& detections){
         tracker.Init(det);
         // Create new track and generate new ID
         tracks[current_ID++] = tracker;
+        //std::cout << "current_ID: " << current_ID << std::endl;
     }
 
     /*** Delete lose tracked tracks ***/
+    
+    //shaoan add one line
+    std::vector<int> erased_new_ids;
     for (auto it = tracks.begin(); it != tracks.end();) {
         if (it->second.coast_cycles_ > _max_age) {
             it = tracks.erase(it);
-        } else {
+        }//shaoan add else if
+        else if(it->second.coast_cycles_ > kMinHits && it->second.hit_total < kMinHits){
+            //std::cout << "erased id is: " << it->first << std::endl;
+            erased_new_ids.push_back(it->first);
+            it = tracks.erase(it);            
+        }
+        else {
             it++;
         }
     }
+    
+    
+    //shaoan add
+    current_ID -= erased_new_ids.size();
+    //std::cout << "current_ID: " << current_ID << std::endl;
+    
+    std::vector<std::pair<int, Tracker> > changed_tracks;
+    for (auto it = tracks.begin(); it != tracks.end();) {
+        
+       int move_len = 0;
+       for(const int index: erased_new_ids){
+           
+           if(it->first > index){               
+               move_len ++;
+            }
+        }
+       if(move_len > 0){
+          int x = it->first-move_len;
+          Tracker track = it->second;
+          changed_tracks.push_back(std::make_pair(x,track));
+          it = tracks.erase(it);
+       } else {
+          it ++;
+       }
+    }
+    
+    tracks.insert(changed_tracks.begin(),changed_tracks.end());
+    //shaoan add end
 
     std::map<int, cv::Rect> results;
     for (auto &trk : tracks) {
@@ -244,8 +307,7 @@ std::map<int,cv::Rect> Sort::update(const std::vector<cv::Rect>& detections){
             //output_file_NIS << trk.second.GetNIS() << "\n";
         }
     }
-    return results;
-     
+    return results;  
 
 
 }
